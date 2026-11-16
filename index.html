@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>KM Leste</title>
+<meta name="description" content="Localizador de km nas rodovias da Regional Leste – DER/PR">
+<meta name="theme-color" content="#0b4f9c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KM Leste">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== TELA PRINCIPAL ===== -->
+<header class="top">
+  <button class="ico" id="btnMenu" aria-label="Menu">
+    <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <div class="brand">KM <b>Leste</b></div>
+  <div class="gps" id="gps"><i></i><span>GPS</span></div>
+</header>
+
+<main id="painel">
+  <div class="rod" id="rod">KM Leste</div>
+  <div class="km" id="km">– – –</div>
+  <button class="sent" id="sent" aria-label="Inverter sentido">
+    <span id="sentTxt">Aguardando GPS…</span>
+    <span class="pista" id="pista" hidden></span>
+  </button>
+  <div class="info" id="trecho"></div>
+  <div class="depara" id="depara"></div>
+  <div class="aviso" id="aviso" hidden></div>
+</main>
+
+<footer class="acoes">
+  <button class="chip" id="btnEstaca">
+    <svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>
+    <span id="btnEstacaTxt">Estaca</span>
+  </button>
+  <button class="fab" id="btnAdd" aria-label="Novo apontamento">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="chip" id="btnLista">
+    <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+    <span>Lista</span><b class="badge" id="cnt" hidden>0</b>
+  </button>
+</footer>
+
+<!-- ===== MENU ===== -->
+<div class="scrim" id="menuScrim" hidden></div>
+<nav class="drawer" id="menu" hidden>
+  <div class="drawer-head">KM <b>Leste</b><small>Regional Leste · DER/PR</small></div>
+  <button data-go="lista">📋 Apontamentos</button>
+  <button data-go="exportar">📤 Exportar para o escritório</button>
+  <button data-go="config">⚙️ Configurações</button>
+  <button data-go="ajuda">❓ Como usar</button>
+  <button data-go="sobre">ℹ️ Sobre a base de rodovias</button>
+  <button id="btnDemo">🚗 Simulação (teste sem GPS)</button>
+</nav>
+
+<!-- ===== TELAS SOBREPOSTAS ===== -->
+<section class="tela" id="tela-novo" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2 id="novoTitulo">Novo apontamento</h2></header>
+  <div class="tconteudo">
+    <div class="loccard" id="novoLoc"></div>
+    <button class="link" id="btnAtualizarLoc">↻ Usar posição atual</button>
+
+    <label class="lbl">Tipo</label>
+    <div class="grid-chips" id="selTipo"></div>
+
+    <label class="lbl">Lado</label>
+    <div class="seg" id="selLado"></div>
+
+    <label class="lbl">Gravidade</label>
+    <div class="seg" id="selGrav"></div>
+
+    <label class="lbl" for="obs">Observação</label>
+    <textarea id="obs" rows="3" placeholder="Descreva o que foi encontrado (opcional)"></textarea>
+
+    <label class="lbl">Fotos</label>
+    <div class="fotos" id="fotosNovo"></div>
+    <div class="row2">
+      <label class="btn sec"><input type="file" accept="image/*" capture="environment" id="inCam" hidden>📷 Tirar foto</label>
+      <label class="btn sec"><input type="file" accept="image/*" multiple id="inGal" hidden>🖼️ Da galeria</label>
+    </div>
+    <p class="hint">As fotos recebem automaticamente a rodovia, o km, o sentido, a data e as coordenadas.</p>
+  </div>
+  <div class="tpe">
+    <button class="btn danger" id="btnExcluirAp" hidden>Excluir</button>
+    <button class="btn pri" id="btnSalvarAp">Salvar apontamento</button>
+  </div>
+</section>
+
+<section class="tela" id="tela-lista" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Apontamentos</h2></header>
+  <div class="tconteudo" id="lista"></div>
+  <div class="tpe"><button class="btn pri" data-go="exportar">📤 Exportar</button></div>
+</section>
+
+<section class="tela" id="tela-exportar" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Exportar</h2></header>
+  <div class="tconteudo">
+    <p>Gera um arquivo <b>.zip</b> com a planilha Excel, o KMZ (Google Earth) e as fotos carimbadas.</p>
+    <label class="lbl">O que exportar</label>
+    <div class="seg" id="selFiltro"></div>
+    <p class="resumo" id="expResumo"></p>
+    <button class="btn pri big" id="btnCompartilhar">📲 Enviar (WhatsApp, e-mail…)</button>
+    <button class="btn sec big" id="btnBaixar">💾 Salvar o arquivo no celular</button>
+    <p class="hint">No WhatsApp o arquivo vai como <b>documento</b>, então as fotos não perdem qualidade. Pelo cabo USB, use “Salvar o arquivo no celular”: ele fica na pasta <b>Downloads</b> (Android) ou em <b>Arquivos</b> (iPhone).</p>
+    <p class="hint" id="expStatus"></p>
+  </div>
+</section>
+
+<section class="tela" id="tela-config" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Configurações</h2></header>
+  <div class="tconteudo">
+    <label class="lbl" for="cfgNome">Seu nome (vai nas fotos e na planilha)</label>
+    <input id="cfgNome" type="text" autocomplete="name" placeholder="Ex.: João Silva">
+    <label class="lbl" for="cfgLote">Contrato / lote (opcional)</label>
+    <input id="cfgLote" type="text" placeholder="Ex.: Lote 01">
+    <label class="lbl">Mostrar posição em</label>
+    <div class="seg" id="cfgFormato"></div>
+    <label class="lbl">Tema</label>
+    <div class="seg" id="cfgTema"></div>
+    <label class="chk"><input type="checkbox" id="cfgTela"> Manter a tela sempre ligada</label>
+    <hr>
+    <button class="btn sec" id="btnLimparExp">Apagar apontamentos já exportados</button>
+    <p class="hint">Os apontamentos ficam guardados só neste celular. Exporte com frequência.</p>
+  </div>
+</section>
+
+<section class="tela" id="tela-sobre" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Sobre a base</h2></header>
+  <div class="tconteudo" id="sobre"></div>
+</section>
+
+<section class="tela" id="tela-ajuda" hidden>
+  <header class="tbar"><button class="ico voltar" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><h2>Como usar</h2></header>
+  <div class="tconteudo prose">
+    <h3>Tela principal</h3>
+    <p>Mostra a <b>rodovia</b>, o <b>km</b> e o <b>sentido</b> (Crescente/Decrescente) onde você está. Em pista dupla aparece também <b>Pista D</b> (crescente) ou <b>Pista E</b> (decrescente).</p>
+    <p>O sentido é calculado pelo movimento do veículo. Parado, o app mantém o último sentido. Se estiver errado, <b>toque no sentido</b> para inverter.</p>
+    <p>O botão <b>Estaca</b> troca a exibição entre km+metros e estaca (20 m).</p>
+    <h3>Avisos</h3>
+    <p><b>Trecho municipal</b>: trecho sob responsabilidade do município (MUN).<br><b>Fora das rodovias cadastradas</b>: você está longe das rodovias da Regional Leste.<br><b>km aproximado</b>: trecho sem estaqueamento, calculado pelo traçado do SRE.</p>
+    <h3>Apontamentos</h3>
+    <p>Toque no <b>+</b> para registrar. A posição é gravada no momento do toque. Escolha o tipo, o lado e a gravidade, escreva uma observação e tire fotos.</p>
+    <h3>Enviar para o escritório</h3>
+    <p>Menu → <b>Exportar</b>. Envie pelo WhatsApp (como documento) ou salve no celular e copie pelo cabo USB.</p>
+    <h3>Dicas</h3>
+    <p>Mantenha o celular com o GPS ligado e use o app <b>instalado na tela inicial</b>. No iPhone isso evita que os dados sejam apagados.</p>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+<div class="carregando" id="carregando"><div class="spin"></div><p>Carregando rodovias…</p></div>
+
+<script src="lib/jszip.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
